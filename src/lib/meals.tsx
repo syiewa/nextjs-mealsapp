@@ -32,7 +32,8 @@ export async function getImageS3(filename: string) {
       Key: filename,
     });
 
-    const url = await getSignedUrl(s3, command);
+    const url = await getSignedUrl(s3, command,{ expiresIn: 900 });
+    console.log(url)
     return url;
     //return new NextResponse(url)
   } catch (error) {
@@ -54,14 +55,14 @@ export async function saveMeal(meal: {
 
   const extension = meal.image.name.split('.').pop();
   const filename = `${slug}.${extension}`;
-  const stream = fs.createWriteStream(`public/images/${filename}`);
+  //const stream = fs.createWriteStream(`public/images/${filename}`);
   const bufferedImage = await meal.image.arrayBuffer();
 
-  stream.write(Buffer.from(bufferedImage),(error) => {
-    if(error){
-      throw new Error('Error saving image');
-    }
-  });
+  // stream.write(Buffer.from(bufferedImage),(error) => {
+  //   if(error){
+  //     throw new Error('Error saving image');
+  //   }
+  // });
 
   try {
     await s3.putObject({
@@ -75,7 +76,7 @@ export async function saveMeal(meal: {
     throw new Error('Error uploading image to S3');
   }
 
-  stream.end();
+  // stream.end();
   //const image = `/images/${filename}`;
   const { error } = await supabase
   .from('meals')
