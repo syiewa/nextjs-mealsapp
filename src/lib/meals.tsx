@@ -1,4 +1,3 @@
-import sql from 'better-sqlite3';
 import slugify from 'slugify';
 import xss from 'xss';
 import fs from 'node:fs';
@@ -15,7 +14,7 @@ const s3 = new S3({
   },
   region: process.env.AWS_REGION || '',
 });
-const db =  sql('meals.db');
+
 const supabase = createClient();
 export async function getMeals() {
   const {data:meals} = await supabase.from('meals').select('*');
