@@ -1,6 +1,5 @@
 import slugify from 'slugify';
 import xss from 'xss';
-import fs from 'node:fs';
 import { S3 } from '@aws-sdk/client-s3';
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';

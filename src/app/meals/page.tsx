@@ -5,6 +5,7 @@ import MealsGrid from "@/components/meals/meals-grid";
 import { getMeals } from "@/lib/meals";
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { revalidatePath } from "next/cache";
 
 export const metadata: Metadata = {
   title: "All Meals",
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 
 async function Meals() {
   const meals:any = await getMeals();
+  revalidatePath("/meals");
   return <MealsGrid meals={meals} />;
 }
 
