@@ -5,6 +5,8 @@ import fs from 'node:fs';
 import { S3 } from '@aws-sdk/client-s3';
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { createClient } from '@/utils/supabase/client';
+
 
 const s3 = new S3({
   credentials: {
@@ -14,21 +16,16 @@ const s3 = new S3({
   region: process.env.AWS_REGION || '',
 });
 const db =  sql('meals.db');
-
+const supabase = createClient();
 export async function getMeals() {
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-
-  const stmt = db.prepare(`
-    SELECT * FROM meals
-  `);
-  return stmt.all();
+  const {data:meals} = await supabase.from('meals').select('*');
+  return meals;
 };
 
-export function getMeal(slug: string) {
-  const stmt = db.prepare(`SELECT * FROM meals WHERE slug = ?`);
-  return stmt.get(slug);
-};
-
+export async function getMeal(slug: string) {
+  const { data: meal } = await supabase.from('meals').select('*').eq('slug', slug).single();
+  return meal;
+}
 export async function getImageS3(filename: string) {
   try {
     const command = new GetObjectCommand({
@@ -81,18 +78,8 @@ export async function saveMeal(meal: {
 
   stream.end();
   //const image = `/images/${filename}`;
-
-  const stmt = db.prepare(`
-    INSERT INTO meals (slug, title, summary, instructions, image, creator, creator_email)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `);
-  stmt.run(
-    slug,
-    meal.title,
-    meal.summary,
-    meal.instructions,
-    filename,
-    meal.creator,
-    meal.creator_email
-  );
+  const { error } = await supabase
+  .from('meals')
+  .insert({ slug: slug, title: meal.title, summary: meal.summary, instructions: meal.instructions, image: filename, creator: meal.creator, creator_email: meal.creator_email });
+  console.log(error);
 }
